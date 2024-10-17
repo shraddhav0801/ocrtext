@@ -1,17 +1,16 @@
 document.getElementById('convertBtn').addEventListener('click', function () {
     const imageInput = document.getElementById('imageInput');
     const previewImage = document.getElementById('previewImage');
-    const previewContainer = document.getElementById('previewContainer');
-    const ocrTextContainer = document.getElementById('ocrTextContainer');
-    const progressBar = document.getElementById('progressBar');
-    const progressBarContainer = document.getElementById('progressBarContainer');
+    const ocrText = document.getElementById('ocrText');
+    const copyTextBtn = document.getElementById('copyTextBtn');
+    const removeTextBtn = document.getElementById('removeTextBtn');
 
     if (imageInput.files && imageInput.files[0]) {
         const reader = new FileReader();
-
+        
         reader.onload = function (e) {
             previewImage.src = e.target.result;
-            previewContainer.style.display = 'block';
+            previewImage.style.display = 'block'; // Show preview image
 
             const img = new Image();
             img.src = e.target.result;
@@ -22,7 +21,6 @@ document.getElementById('convertBtn').addEventListener('click', function () {
                 canvas.height = img.height;
 
                 ctx.drawImage(img, 0, 0);
-
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
@@ -34,12 +32,7 @@ document.getElementById('convertBtn').addEventListener('click', function () {
                 }
 
                 ctx.putImageData(imageData, 0, 0);
-
                 const processedImage = canvas.toDataURL();
-
-                progressBarContainer.style.display = 'block';
-                progressBar.style.width = '0%';
-                progressBar.textContent = '0%';
 
                 Tesseract.recognize(
                     processedImage,
@@ -47,52 +40,26 @@ document.getElementById('convertBtn').addEventListener('click', function () {
                     {
                         logger: (m) => {
                             if (m.status === 'recognizing text') {
-                                const progress = Math.floor(m.progress * 100);
-                                progressBar.style.width = `${progress}%`;
-                                progressBar.textContent = `${progress}%`;
+                                console.log(`Progress: ${Math.floor(m.progress * 100)}%`);
                             }
                         }
                     }
                 ).then(({ data: { text } }) => {
-                    const textBlock = document.createElement('div');
-                    textBlock.classList.add('converted-text');
-                    textBlock.textContent = text;
+                    const textItem = document.createElement('div');
+                    textItem.className = 'history-item';
+                    textItem.innerText = text.trim();
+                    ocrText.appendChild(textItem);
+                    ocrText.appendChild(document.createElement('br')); // Add line break
 
-                    setTimeout(() => {
-                        textBlock.classList.add('show');
-                    }, 10);
+                    copyTextBtn.style.display = 'inline'; // Show copy button
+                    removeTextBtn.style.display = 'inline'; // Show remove button
 
-                    const actionsDiv = document.createElement('div');
-                    actionsDiv.classList.add('actions');
-
-                    const copyBtn = document.createElement('button');
-                    copyBtn.textContent = 'Copy';
-                    copyBtn.onclick = function () {
-                        navigator.clipboard.writeText(text)
-                            .then(() => alert('Text copied to clipboard!'))
-                            .catch(err => console.error('Error copying text: ', err));
-                    };
-
-                    const removeBtn = document.createElement('button');
-                    removeBtn.textContent = 'Remove';
-                    removeBtn.onclick = function () {
-                        textBlock.classList.remove('show');
-                        setTimeout(() => {
-                            ocrTextContainer.removeChild(textBlock);
-                            ocrTextContainer.removeChild(actionsDiv);
-                        }, 500);
-                    };
-
-                    actionsDiv.appendChild(copyBtn);
-                    actionsDiv.appendChild(removeBtn);
-                    ocrTextContainer.appendChild(textBlock);
-                    ocrTextContainer.appendChild(actionsDiv);
-
-                    progressBarContainer.style.display = 'none';
-                    previewContainer.style.display = 'none';
+                    // Clear the input and hide preview
+                    imageInput.value = '';
+                    previewImage.style.display = 'none';
                 }).catch((err) => {
                     console.error(err);
-                    alert("Error recognizing text.");
+                    ocrText.textContent = "Error recognizing text.";
                 });
             };
         };
@@ -101,4 +68,22 @@ document.getElementById('convertBtn').addEventListener('click', function () {
     } else {
         alert('Please select an image first!');
     }
+});
+
+document.getElementById('copyTextBtn').addEventListener('click', function () {
+    const text = document.getElementById('ocrText').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Text copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+});
+
+document.getElementById('removeTextBtn').addEventListener('click', function () {
+    const ocrTextContainer = document.getElementById('ocrText');
+    while (ocrTextContainer.firstChild) {
+        ocrTextContainer.removeChild(ocrTextContainer.firstChild);
+    }
+    this.style.display = 'none'; // Hide remove button
+    document.getElementById('copyTextBtn').style.display = 'none'; // Hide copy button
 });
