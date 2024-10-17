@@ -3,29 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Image to OCR Text</title>
+    <title>Image to OCR Text Converter (English & Hindi)</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>Image to OCR Text Converter</h1>
+        <h1>Image to OCR Text Converter (English & Hindi)</h1>
         <input type="file" id="imageInput" accept="image/*" />
         <button id="convertBtn">Convert to Text</button>
         
-        <div class="progress-bar-container" id="progressBarContainer" style="display: none;">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-
-        <div class="preview" id="previewContainer" style="display: none;">
+        <div class="preview">
             <img id="previewImage" src="" alt="Image Preview" />
         </div>
         <div class="output">
             <h3>Extracted Text:</h3>
-            <div id="ocrTextContainer"></div>
+            <div id="ocrText"></div>
+            <div class="controls">
+                <button id="copyTextBtn" style="display: none;">Copy Text</button>
+                <button id="removeTextBtn" style="display: none;">Remove from History</button>
+            </div>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@v2.1.1/dist/tesseract.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/2.1.1/tesseract.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
